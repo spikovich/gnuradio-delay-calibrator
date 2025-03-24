@@ -1,4 +1,3 @@
-gnuradio
 numpy
 PyQt5
 unittest
