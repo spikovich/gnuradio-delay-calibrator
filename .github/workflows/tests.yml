@@ -31,5 +31,5 @@ jobs:
     
     - name: Run tests
       run: |
-        # Run tests with virtual display
-        xvfb-run -a python3 -m unittest discover -s tests
+    
+        xvfb-run -a python3 tests/test_runner.py
