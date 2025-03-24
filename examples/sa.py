@@ -96,7 +96,7 @@ class sa(gr.top_block, Qt.QWidget):
             'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
         widths = [1, 1, 1, 1, 1,
             1, 1, 1, 1, 1]
-        colors = ['blue', 'red', 'green', 'black', 'cyan',
+        colors = ['red', 'red', 'green', 'black', 'cyan',
             'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
         alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
             1.0, 1.0, 1.0, 1.0, 1.0]
@@ -121,7 +121,7 @@ class sa(gr.top_block, Qt.QWidget):
         self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_float*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
         self.blocks_sub_xx_0 = blocks.sub_ff(1)
-        self.blocks_delay_1 = blocks.delay(gr.sizeof_char*1, 0)
+        self.blocks_delay_1 = blocks.delay(gr.sizeof_char*1, delay)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_char*1, 5)
         self.blocks_char_to_float_1 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0 = blocks.char_to_float(1, 1)
@@ -162,6 +162,7 @@ class sa(gr.top_block, Qt.QWidget):
 
     def set_delay(self, delay):
         self.delay = delay
+        self.blocks_delay_1.set_dly(int(self.delay))
 
 
 
