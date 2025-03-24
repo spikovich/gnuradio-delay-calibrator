@@ -15,34 +15,19 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-    
+  
     - name: Install GNU Radio
-      run: sudo apt-get install -y gnuradio
-
-    - name: Install PyQt5
-      run: sudo apt-get install -y python3-pyqt5
-    
-    - name: Install GNU Radio with Qt GUI support
       run: |
         sudo apt-get update
-        sudo apt-get install -y gnuradio gnuradio-dev gr-qtgui python3-gr-qtgui
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
+        sudo apt-get install -y gnuradio gnuradio-dev gr-qtgui python3-qt5 
+  
     
-    - name: Make system packages available to Python 3.8
-      run: |  
-        SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
-        echo "/usr/lib/python3/dist-packages" > "$SITE_PACKAGES/gnuradio.pth"
-
+  
     - name: Install dependencies
       run: |
         python3 -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install PyQt5
-
+        pip3 install -r requirements.txt
+  
     - name: Run tests
       run: |
         python3 -m unittest discover -s tests
