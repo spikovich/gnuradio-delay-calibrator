@@ -25,8 +25,8 @@ jobs:
     - name: Install GNU Radio with Qt GUI support
       run: |
         sudo apt-get update
-        sudo apt-get install -y gnuradio gnuradio-dev python3-gnuradio python3-gnuradio-qtgui
-        
+        sudo apt-get install -y gnuradio gnuradio-dev gr-qtgui python3-gr-qtgui
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
