@@ -19,10 +19,10 @@ jobs:
     - name: Install GNU Radio
       run: |
         sudo apt-get update
-        sudo apt-get install -y gnuradio gnuradio-dev libgnuradio-qtgui* python3-pyqt5 python3-pyqt5.qtgui
+        sudo apt-get install -y gnuradio gnuradio-dev libgnuradio-qtgui* python3-pyqt5
+        apt-cache search pyqt5 | grep -i gui
         apt-cache search gnuradio | grep qtgui
         dpkg -l | grep gnuradio
-    
   
     - name: Install dependencies
       run: |
