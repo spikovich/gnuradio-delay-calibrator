@@ -34,7 +34,7 @@ This Code of Conduct applies within all project spaces and when representing the
 
 ## Reporting Interference
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project team at [contact@example.com]. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project team at [sotrudnic003@gmail.com]. All complaints will be reviewed and investigated promptly and fairly.
 
 ## Enforcement Protocol
 
