@@ -31,6 +31,8 @@ gnuradio-delay-calibrator/
 ├── requirements.txt        # Project dependencies
 ├── LICENSE                 # MIT License
 ├── CODE_OF_CONDUCT.md      # Community guidelines
+├── CONTRIBUTING.md         # Contributing guidelines
+├── SECURITY.md             # Security policy
 └── README.md               # This file
 ```
 
@@ -67,7 +69,11 @@ You can also check the examples directory for sample implementations and test ca
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-Before contributing, please read our [Code of Conduct](CODE_OF_CONDUCT.md).
+Before contributing, please read our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing Guidelines](CONTRIBUTING.md).
+
+## Security
+
+For security issues, please review our [Security Policy](SECURITY.md) before reporting.
 
 ## License
 
