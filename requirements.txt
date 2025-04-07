@@ -1,4 +1,6 @@
-
-numpy
+numpy>=1.19.0
+PyQt5>=5.15.0
+matplotlib>=3.3.0
+scipy>=1.6.0
 
 
