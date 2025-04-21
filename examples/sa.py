@@ -10,6 +10,7 @@
 
 from PyQt5 import Qt
 from gnuradio import qtgui
+from PyQt5 import QtCore
 from gnuradio import blocks
 import numpy
 from gnuradio import gr
@@ -21,7 +22,6 @@ from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
-import sa_epy_block_0 as epy_block_0  # embedded python block
 import sip
 
 
@@ -61,27 +61,16 @@ class sa(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.start_calibration_button = start_calibration_button = False
         self.samp_rate = samp_rate = 32000
-        self.reset_calibration_button = reset_calibration_button = False
-        self.compensation_delay = compensation_delay = 0
+        self.delay = delay = 0
 
         ##################################################
         # Blocks
         ##################################################
 
-        _start_calibration_button_push_button = Qt.QPushButton('Start Calibration')
-        _start_calibration_button_push_button = Qt.QPushButton('Start Calibration')
-        self._start_calibration_button_choices = {'Pressed': 1, 'Released': 0}
-        _start_calibration_button_push_button.pressed.connect(lambda: self.set_start_calibration_button(self._start_calibration_button_choices['Pressed']))
-        _start_calibration_button_push_button.released.connect(lambda: self.set_start_calibration_button(self._start_calibration_button_choices['Released']))
-        self.top_layout.addWidget(_start_calibration_button_push_button)
-        _reset_calibration_button_push_button = Qt.QPushButton('Reset Calibration')
-        _reset_calibration_button_push_button = Qt.QPushButton('Reset Calibration')
-        self._reset_calibration_button_choices = {'Pressed': 1, 'Released': 0}
-        _reset_calibration_button_push_button.pressed.connect(lambda: self.set_reset_calibration_button(self._reset_calibration_button_choices['Pressed']))
-        _reset_calibration_button_push_button.released.connect(lambda: self.set_reset_calibration_button(self._reset_calibration_button_choices['Released']))
-        self.top_layout.addWidget(_reset_calibration_button_push_button)
+        self._delay_range = qtgui.Range(0, 10, 1, 0, 200)
+        self._delay_win = qtgui.RangeWidget(self._delay_range, self.set_delay, "'delay'", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._delay_win)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
             200, #size
             samp_rate, #samp_rate
@@ -130,9 +119,9 @@ class sa(gr.top_block, Qt.QWidget):
 
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
-        self.epy_block_0 = epy_block_0.blk(example_param=1.0)
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_float*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
-        self.blocks_delay_1 = blocks.delay(gr.sizeof_char*1, compensation_delay)
+        self.blocks_sub_xx_0 = blocks.sub_ff(1)
+        self.blocks_delay_1 = blocks.delay(gr.sizeof_char*1, delay)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_char*1, 5)
         self.blocks_char_to_float_1 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0 = blocks.char_to_float(1, 1)
@@ -144,12 +133,12 @@ class sa(gr.top_block, Qt.QWidget):
         ##################################################
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_delay_0, 0))
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_delay_1, 0))
-        self.connect((self.blocks_char_to_float_0, 0), (self.epy_block_0, 0))
-        self.connect((self.blocks_char_to_float_1, 0), (self.epy_block_0, 1))
+        self.connect((self.blocks_char_to_float_0, 0), (self.blocks_sub_xx_0, 0))
+        self.connect((self.blocks_char_to_float_1, 0), (self.blocks_sub_xx_0, 1))
         self.connect((self.blocks_delay_0, 0), (self.blocks_char_to_float_0, 0))
         self.connect((self.blocks_delay_1, 0), (self.blocks_char_to_float_1, 0))
+        self.connect((self.blocks_sub_xx_0, 0), (self.blocks_throttle2_0, 0))
         self.connect((self.blocks_throttle2_0, 0), (self.qtgui_time_sink_x_0, 0))
-        self.connect((self.epy_block_0, 0), (self.blocks_throttle2_0, 0))
 
 
     def closeEvent(self, event):
@@ -160,12 +149,6 @@ class sa(gr.top_block, Qt.QWidget):
 
         event.accept()
 
-    def get_start_calibration_button(self):
-        return self.start_calibration_button
-
-    def set_start_calibration_button(self, start_calibration_button):
-        self.start_calibration_button = start_calibration_button
-
     def get_samp_rate(self):
         return self.samp_rate
 
@@ -174,18 +157,12 @@ class sa(gr.top_block, Qt.QWidget):
         self.blocks_throttle2_0.set_sample_rate(self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
 
-    def get_reset_calibration_button(self):
-        return self.reset_calibration_button
+    def get_delay(self):
+        return self.delay
 
-    def set_reset_calibration_button(self, reset_calibration_button):
-        self.reset_calibration_button = reset_calibration_button
-
-    def get_compensation_delay(self):
-        return self.compensation_delay
-
-    def set_compensation_delay(self, compensation_delay):
-        self.compensation_delay = compensation_delay
-        self.blocks_delay_1.set_dly(int(self.compensation_delay))
+    def set_delay(self, delay):
+        self.delay = delay
+        self.blocks_delay_1.set_dly(int(self.delay))
 
 
 

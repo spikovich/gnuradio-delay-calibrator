@@ -33,33 +33,25 @@ options:
     state: enabled
 
 blocks:
-- name: compensation_delay
-  id: variable
-  parameters:
-    comment: ''
-    value: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [48, 304.0]
-    rotation: 0
-    state: enabled
-- name: reset_calibration_button
-  id: variable_qtgui_push_button
+- name: delay
+  id: variable_qtgui_range
   parameters:
     comment: ''
     gui_hint: ''
-    label: Reset Calibration
-    pressed: '1'
-    released: '0'
-    type: bool
-    value: 'False'
+    label: ''
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0'
+    step: '1'
+    stop: '10'
+    value: '0'
+    widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 328.0]
+    coordinate: [520, 24.0]
     rotation: 0
     state: enabled
 - name: samp_rate
@@ -72,23 +64,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [184, 12]
-    rotation: 0
-    state: enabled
-- name: start_calibration_button
-  id: variable_qtgui_push_button
-  parameters:
-    comment: ''
-    gui_hint: ''
-    label: Start Calibration
-    pressed: '1'
-    released: '0'
-    type: bool
-    value: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [480, 40.0]
     rotation: 0
     state: enabled
 - name: analog_random_source_x_0
@@ -171,7 +146,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    delay: compensation_delay
+    delay: delay
     maxoutbuf: '0'
     minoutbuf: '0'
     num_ports: '1'
@@ -202,7 +177,7 @@ blocks:
     bus_structure: null
     coordinate: [496, 168.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_throttle2_0
   id: blocks_throttle2
   parameters:
@@ -222,41 +197,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [632, 312.0]
-    rotation: 0
-    state: enabled
-- name: epy_block_0
-  id: epy_block
-  parameters:
-    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
-      \ GRC will instantiate the first class it finds\nto get ports and parameters\
-      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
-      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
-      from gnuradio import gr\n\n\nclass blk(gr.sync_block):  # other base classes\
-      \ are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python Block\
-      \ example - a simple multiply const\"\"\"\n\n    def __init__(self, example_param=1.0):\
-      \  # only default arguments here\n        \"\"\"arguments to this function show\
-      \ up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n         \
-      \   self,\n            name='Embedded Python Block',   # will show up in GRC\n\
-      \            in_sig=[np.float32, np.float32],\n            out_sig=[np.float32]\n\
-      \        )\n        # if an attribute with the same name as a parameter is found,\n\
-      \        # a callback is registered (properties work, too).\n        self.example_param\
-      \ = example_param\n\n    def work(self, input_items, output_items):\n      \
-      \  \"\"\"example: multiply with constant\"\"\"\n        output_items[0][:] =\
-      \ input_items[0] * self.example_param\n        return len(output_items[0])\n"
-    affinity: ''
-    alias: ''
-    comment: ''
-    example_param: '1.0'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-  states:
-    _io_cache: ('Embedded Python Block', 'blk', [('example_param', '1.0')], [('0',
-      'float', 1), ('1', 'float', 1)], [('0', 'float', 1)], 'Embedded Python Block
-      example - a simple multiply const', ['example_param'])
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [408, 320.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0
@@ -353,19 +293,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [656, 168.0]
+    coordinate: [672, 144.0]
     rotation: 0
     state: enabled
 
 connections:
 - [analog_random_source_x_0, '0', blocks_delay_0, '0']
 - [analog_random_source_x_0, '0', blocks_delay_1, '0']
-- [blocks_char_to_float_0, '0', epy_block_0, '0']
-- [blocks_char_to_float_1, '0', epy_block_0, '1']
+- [blocks_char_to_float_0, '0', blocks_sub_xx_0, '0']
+- [blocks_char_to_float_1, '0', blocks_sub_xx_0, '1']
 - [blocks_delay_0, '0', blocks_char_to_float_0, '0']
 - [blocks_delay_1, '0', blocks_char_to_float_1, '0']
+- [blocks_sub_xx_0, '0', blocks_throttle2_0, '0']
 - [blocks_throttle2_0, '0', qtgui_time_sink_x_0, '0']
-- [epy_block_0, '0', blocks_throttle2_0, '0']
 
 metadata:
   file_format: 1
