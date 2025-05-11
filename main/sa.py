@@ -132,7 +132,7 @@ class sa(gr.top_block, Qt.QWidget):
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
         self.epy_block_0 = epy_block_0.blk(buffer_size=1024)
-        self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_float*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
+        self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_float*1, samp_rate, True, 0 if "time" == "auto" else max( int(float(0.1) * samp_rate) if "time" == "time" else int(0.1), 1) )
         self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
         self.blocks_delay_1 = blocks.delay(gr.sizeof_char*1, compensation_delay)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_char*1, 5)

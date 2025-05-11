@@ -225,7 +225,7 @@ blocks:
     alias: ''
     comment: ''
     ignoretag: 'True'
-    limit: auto
+    limit: time
     maximum: '0.1'
     maxoutbuf: '0'
     minoutbuf: '0'
