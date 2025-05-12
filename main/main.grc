@@ -101,7 +101,7 @@ blocks:
     maxoutbuf: '0'
     min: '0'
     minoutbuf: '0'
-    num_samps: '1000'
+    num_samps: '8129'
     repeat: 'True'
     type: byte
   states:
@@ -197,27 +197,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [680, 416.0]
+    coordinate: [744, 416.0]
     rotation: 0
     state: enabled
-- name: blocks_sub_xx_0
-  id: blocks_sub_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    num_inputs: '2'
-    type: float
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [496, 168.0]
-    rotation: 0
-    state: disabled
 - name: blocks_throttle2_0
   id: blocks_throttle2
   parameters:
@@ -236,63 +218,192 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [672, 328.0]
+    coordinate: [840, 296.0]
     rotation: 0
     state: enabled
 - name: epy_block_0
   id: epy_block
   parameters:
-    _source_code: "import numpy as np\nfrom gnuradio import gr\nimport pmt \n\nclass\
-      \ blk(gr.sync_block):\n    \"\"\"\n    Embedded Python Block to detect delay\
-      \ between two signals using cross-correlation\n    and publish the result as\
-      \ a PMT message.\n    \"\"\"\n\n    def __init__(self, buffer_size=1024):\n\
-      \        \"\"\"arguments to this function show up as parameters in GRC\"\"\"\
-      \n        gr.sync_block.__init__(\n            self,\n            name='Delay\
-      \ Correaltion EPB',\n            in_sig=[np.float32, np.float32],\n        \
-      \    out_sig=[np.float32]\n        )\n        self.buffer_size = int(buffer_size)\n\
-      \        self.message_port_register_out(pmt.intern('delay_lag'))\n\n       \
-      \ self.buf0 = np.zeros(self.buffer_size, dtype=np.float32)\n        self.buf1\
-      \ = np.zeros(self.buffer_size, dtype=np.float32)\n        self.ptr = 0\n   \
-      \     self.correlation_done = False\n        self.calibration_active = False\n\
-      \n        self.tb = None\n\n    def start_calibration(self):\n        \"\"\"\
-      Called to start the calibration process.\"\"\"\n        print(\"EPB: Start Calibration\
-      \ Requested\")\n        self.ptr = 0\n        self.correlation_done = False\n\
-      \        self.calibration_active = True\n\n    def reset_calibration(self):\n\
-      \        \"\"\"Called to reset the calibration.\"\"\"\n        print(\"EPB:\
-      \ Reset Calibration Requested\")\n        self.calibration_active = False\n\
-      \        self.correlation_done = True\n\n    def work(self, input_items, output_items):\n\
-      \        data0 = input_items[0]\n        data1 = input_items[1]\n        num_samples_to_process\
-      \ = len(data0)\n\n        if self.calibration_active and not self.correlation_done:\n\
-      \            samples_to_copy = min(num_samples_to_process, self.buffer_size\
-      \ - self.ptr)\n\n            if samples_to_copy > 0:\n                self.buf0[self.ptr\
-      \ : self.ptr + samples_to_copy] = data0[:samples_to_copy]\n                self.buf1[self.ptr\
-      \ : self.ptr + samples_to_copy] = data1[:samples_to_copy]\n                self.ptr\
-      \ += samples_to_copy\n\n            if self.ptr >= self.buffer_size:\n     \
-      \           print(f\"EPB: Buffer full ({self.ptr} samples). Performing correlation...\"\
-      )\n                x0 = self.buf0 - np.mean(self.buf0)\n                x1 =\
-      \ self.buf1 - np.mean(self.buf1)\n                corr = np.correlate(x0, x1,\
-      \ mode='full')\n                lag = int(np.argmax(corr) - (self.buffer_size\
-      \ - 1))\n                print(f\"EPB: Correlation complete. Calculated Lag\
-      \ = {lag}\")\n                self.message_port_pub(pmt.intern('delay_lag'),\
-      \ pmt.to_pmt(lag))\n                self.correlation_done = True\n         \
-      \       self.calibration_active = False\n                print(\"EPB: Lag message\
-      \ published. Calibration cycle finished.\")\n\n        output_items[0][:num_samples_to_process]\
-      \ = 0.0\n\n        return num_samples_to_process"
+    _source_code: "import numpy as np\nfrom gnuradio import gr\nimport pmt\n\nclass\
+      \ blk(gr.sync_block):\n    # \u0414\u043E\u0431\u0430\u0432\u043B\u044F\u0435\
+      \u043C top_block_instance=None \u0432 \u043F\u0430\u0440\u0430\u043C\u0435\u0442\
+      \u0440\u044B __init__\n    def __init__(self, buffer_size=1024): # <--- \u0418\
+      \u0417\u041C\u0415\u041D\u0415\u041D\u0418\u0415\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='Delay Auto-Corrector EPB',\n         \
+      \   in_sig=[np.float32, np.float32],\n            out_sig=[np.float32]\n   \
+      \     )\n        self.buffer_size = int(buffer_size)\n        self.message_port_register_out(pmt.intern('calculated_lag'))\n\
+      \n        self.buf0 = np.array([], dtype=np.float32)\n        self.buf1 = np.array([],\
+      \ dtype=np.float32)\n\n        self.calibration_active = False\n        self.correlation_done_this_cycle\
+      \ = True\n        \n        # \u0421\u043E\u0445\u0440\u0430\u043D\u044F\u0435\
+      \u043C \u043F\u0435\u0440\u0435\u0434\u0430\u043D\u043D\u0443\u044E \u0441\u0441\
+      \u044B\u043B\u043A\u0443\n        self.parent_flowgraph_ref = None  # <--- \u0418\
+      \u0417\u041C\u0415\u041D\u0415\u041D\u0418\u0415\n        #if self.parent_flowgraph_ref\
+      \ is not None:\n            #print(\"EPB INFO: parent_flowgraph_ref received\
+      \ via __init__.\")\n        #else:\n            # \u042D\u0442\u043E \u0441\u043E\
+      \u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0442\u0435\u043F\u0435\u0440\u044C\
+      \ \u0431\u0443\u0434\u0435\u0442 \u0431\u043E\u043B\u0435\u0435 \u043A\u0440\
+      \u0438\u0442\u0438\u0447\u043D\u044B\u043C, \u0435\u0441\u043B\u0438 \u043D\u0435\
+      \ \u0441\u0440\u0430\u0431\u043E\u0442\u0430\u0435\u0442 \u0440\u0443\u0447\u043D\
+      \u0430\u044F \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430\n      \
+      \     # print(\"EPB CRITICAL WARNING: parent_flowgraph_ref NOT received via\
+      \ __init__ OR manual set. Interaction will fail.\")\n\n        self.last_start_button_var_val\
+      \ = False\n        self.last_reset_button_var_val = False\n\n        self.start_button_variable_id\
+      \ = \"start_calibration_button\"\n        self.reset_button_variable_id = \"\
+      reset_calibration_button\"\n        \n        self.initial_compensation_delay_set_on_start\
+      \ = False\n        self.work_call_count = 0 \n\n        print(f\"EPB Initialized:\
+      \ Buffer Size = {self.buffer_size}\")\n        #if self.parent_flowgraph_ref\
+      \ is None:\n            #print(\"EPB INFO: __init__ - parent_flowgraph_ref is\
+      \ initially None. Manual set in top_block is expected.\")\n\n    # \u041C\u0435\
+      \u0442\u043E\u0434 _try_get_parent_flowgraph() \u0423\u0414\u0410\u041B\u0415\
+      \u041D\n    def set_parent_flowgraph_reference(self, parent_ref):\n        #print(f\"\
+      EPB DEBUG: set_parent_flowgraph_reference called with parent_ref type: {type(parent_ref)}\"\
+      )\n        self.parent_flowgraph_ref = parent_ref\n        #if self.parent_flowgraph_ref\
+      \ is not None:\n            #print(\"EPB INFO: parent_flowgraph_ref successfully\
+      \ set via method call.\")\n        #else:\n            #print(\"EPB WARNING:\
+      \ parent_flowgraph_ref is STILL None after method call set_parent_flowgraph_reference.\"\
+      )\n\n    def _check_buttons(self):\n        # print(\"EPB DEBUG: _check_buttons()\
+      \ called.\")\n        parent_fg = self.parent_flowgraph_ref # \u0422\u0435\u043F\
+      \u0435\u0440\u044C \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0435\u043C\
+      \ \u043D\u0430\u043F\u0440\u044F\u043C\u0443\u044E\n        if parent_fg is\
+      \ None:\n            # print(\"EPB DEBUG: _check_buttons() - parent_fg_ref is\
+      \ None, returning.\")\n            return \n        # ... \u043E\u0441\u0442\
+      \u0430\u043B\u044C\u043D\u043E\u0439 \u043A\u043E\u0434 _check_buttons \u0431\
+      \u0435\u0437 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0439 ...\n  \
+      \      try:\n            getter_start_name = f\"get_{self.start_button_variable_id}\"\
+      \n            if hasattr(parent_fg, getter_start_name):\n                current_start_button_var_bool\
+      \ = getattr(parent_fg, getter_start_name)() \n                if current_start_button_var_bool\
+      \ and not self.last_start_button_var_val:\n                    self.start_calibration()\n\
+      \                self.last_start_button_var_val = current_start_button_var_bool\n\
+      \            #else: \n                # print(f\"EPB DEBUG: _check_buttons()\
+      \ - Start button getter '{getter_start_name}' not found.\") \n        except\
+      \ Exception as e:\n            print(f\"EPB Error checking start button variable:\
+      \ {e}\")\n\n        try:\n            getter_reset_name = f\"get_{self.reset_button_variable_id}\"\
+      \n            if hasattr(parent_fg, getter_reset_name):\n                current_reset_button_var_bool\
+      \ = getattr(parent_fg, getter_reset_name)()\n                if current_reset_button_var_bool\
+      \ and not self.last_reset_button_var_val:\n                    self.reset_calibration()\n\
+      \                self.last_reset_button_var_val = current_reset_button_var_bool\n\
+      \            #else: \n              #  print(f\"EPB DEBUG: _check_buttons()\
+      \ - Reset button getter '{getter_reset_name}' not found.\") \n        except\
+      \ Exception as e:\n            print(f\"EPB Error checking reset button variable:\
+      \ {e}\")\n\n\n    def _set_compensation_delay_on_parent(self, delay_value):\n\
+      \        parent_fg = self.parent_flowgraph_ref\n        if parent_fg is None:\n\
+      \            print(\"EPB Warning: Cannot set compensation_delay, parent_flowgraph_ref\
+      \ is None.\")\n            return False\n        # ... \u043E\u0441\u0442\u0430\
+      \u043B\u044C\u043D\u043E\u0439 \u043A\u043E\u0434 _set_compensation_delay_on_parent\
+      \ \u0431\u0435\u0437 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0439\
+      \ ...\n        try:\n            comp_delay_var_name = 'compensation_delay'\n\
+      \            setter_method_name = f\"set_{comp_delay_var_name}\"\n         \
+      \   if hasattr(parent_fg, setter_method_name):\n                #print(f\"EPB\
+      \ DEBUG: Setting compensation_delay to {int(round(delay_value))}\") \n     \
+      \           getattr(parent_fg, setter_method_name)(int(round(max(0,delay_value))))\
+      \ \n                return True\n            else:\n                print(f\"\
+      EPB Error: Parent flowgraph does not have method {setter_method_name}()\")\n\
+      \                return False\n        except Exception as e:\n            print(f\"\
+      EPB Error: Could not set {comp_delay_var_name} on parent: {e}\")\n         \
+      \   return False\n            \n    def _get_compensation_delay_from_parent(self):\n\
+      \        parent_fg = self.parent_flowgraph_ref\n        if parent_fg is None:\n\
+      \            #print(\"EPB DEBUG: _get_compensation_delay_from_parent() - parent_fg_ref\
+      \ is None. Returning 0.\")\n            return 0 \n        # ... \u043E\u0441\
+      \u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043A\u043E\u0434 _get_compensation_delay_from_parent\
+      \ \u0431\u0435\u0437 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0439\
+      \ ...\n        try:\n            comp_delay_var_name = 'compensation_delay'\n\
+      \            getter_method_name = f\"get_{comp_delay_var_name}\"\n         \
+      \   if hasattr(parent_fg, getter_method_name):\n                val = getattr(parent_fg,\
+      \ getter_method_name)()\n                #print(f\"EPB DEBUG: Got compensation_delay\
+      \ = {val}\") \n                return val\n            else:\n             \
+      \   print(f\"EPB Error: Parent flowgraph does not have method {getter_method_name}().\
+      \ Returning 0.\")\n                return 0\n        except Exception as e:\n\
+      \            print(f\"EPB Error: Could not get {comp_delay_var_name} from parent:\
+      \ {e}. Returning 0.\")\n            return 0\n\n    def start_calibration(self):\n\
+      \        print(\"EPB: Start Calibration Action Triggered\")\n        self.calibration_active\
+      \ = True\n        self.correlation_done_this_cycle = False\n        self.buf0\
+      \ = np.array([], dtype=np.float32)\n        self.buf1 = np.array([], dtype=np.float32)\n\
+      \        print(\"EPB: Buffers cleared, awaiting data for correlation.\")\n\n\
+      \    def reset_calibration(self):\n        print(\"EPB: Reset Calibration Action\
+      \ Triggered\")\n        self.calibration_active = False\n        self.correlation_done_this_cycle\
+      \ = True\n        self.buf0 = np.array([], dtype=np.float32)\n        self.buf1\
+      \ = np.array([], dtype=np.float32)\n\n        if self._set_compensation_delay_on_parent(0):\n\
+      \            print(f\"EPB: Compensation_delay reset to 0.\")\n            self.initial_compensation_delay_set_on_start\
+      \ = True \n        else:\n            print(f\"EPB Warning: Failed to reset\
+      \ compensation_delay to 0.\")\n        print(\"EPB: Calibration reset logic\
+      \ complete.\")\n\n    def work(self, input_items, output_items):\n        self.work_call_count\
+      \ += 1\n        # \u0423\u0431\u0440\u0430\u043B\u0438 \u0432\u044B\u0437\u043E\
+      \u0432 _try_get_parent_flowgraph() \u043E\u0442\u0441\u044E\u0434\u0430, \u0442\
+      .\u043A. \u0441\u0441\u044B\u043B\u043A\u0430 \u0434\u043E\u043B\u0436\u043D\
+      \u0430 \u0431\u044B\u0442\u044C \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\
+      \u0435\u043D\u0430 \u0432 __init__ (\u0432\u0440\u0443\u0447\u043D\u0443\u044E\
+      )\n\n        if self.parent_flowgraph_ref is not None: # \u041F\u0440\u043E\u0432\
+      \u0435\u0440\u044F\u0435\u043C, \u0431\u044B\u043B\u0430 \u043B\u0438 \u0441\
+      \u0441\u044B\u043B\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\
+      \u0435\u043D\u0430\n            # print(f\"EPB DEBUG: work() call #{self.work_call_count},\
+      \ parent_flowgraph_ref IS available.\")\n            if not self.initial_compensation_delay_set_on_start:\n\
+      \                self.reset_calibration() \n            self._check_buttons()\n\
+      \        else:\n            # \u042D\u0442\u043E \u0431\u0443\u0434\u0435\u0442\
+      \ \u043F\u0440\u043E\u0438\u0441\u0445\u043E\u0434\u0438\u0442\u044C, \u0435\
+      \u0441\u043B\u0438 \u0440\u0443\u0447\u043D\u0430\u044F \u0443\u0441\u0442\u0430\
+      \u043D\u043E\u0432\u043A\u0430 self.parent_flowgraph_ref \u0432 sa.py \u043D\
+      \u0435 \u0441\u0440\u0430\u0431\u043E\u0442\u0430\u043B\u0430\n            if\
+      \ self.work_call_count < 5: # \u041F\u0435\u0447\u0430\u0442\u0430\u0435\u043C\
+      \ \u0442\u043E\u043B\u044C\u043A\u043E \u043F\u0435\u0440\u0432\u044B\u0435\
+      \ \u043D\u0435\u0441\u043A\u043E\u043B\u044C\u043A\u043E \u0440\u0430\u0437\
+      , \u0447\u0442\u043E\u0431\u044B \u043D\u0435 \u0437\u0430\u0441\u043E\u0440\
+      \u044F\u0442\u044C\n                print(f\"EPB WARNING: work() call #{self.work_call_count}\
+      \ - parent_flowgraph_ref is STILL None. Interaction with GUI/variables will\
+      \ fail.\")\n        \n        if not (input_items and \\\n                len(input_items)\
+      \ >= 2 and \\\n                input_items[0] is not None and \\\n         \
+      \       input_items[1] is not None and \\\n                len(input_items[0])\
+      \ > 0 and \\\n                len(input_items[1]) > 0):\n            if output_items\
+      \ and output_items[0] is not None:\n                 output_items[0][:] = 0.0\
+      \ \n            return 0\n        \n        self.buf0 = np.concatenate((self.buf0,\
+      \ input_items[0]))\n        self.buf1 = np.concatenate((self.buf1, input_items[1]))\n\
+      \n        max_buf_len = self.buffer_size * 2 \n        if len(self.buf0) > max_buf_len:\
+      \ self.buf0 = self.buf0[-max_buf_len:]\n        if len(self.buf1) > max_buf_len:\
+      \ self.buf1 = self.buf1[-max_buf_len:]\n\n        if self.calibration_active\
+      \ and not self.correlation_done_this_cycle:\n            if len(self.buf0) >=\
+      \ self.buffer_size and len(self.buf1) >= self.buffer_size:\n               \
+      \ if self.parent_flowgraph_ref is None: # \u0415\u0449\u0435 \u043E\u0434\u043D\
+      \u0430 \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0430 \u043F\u0435\u0440\u0435\
+      \u0434 \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u043D\u0438\
+      \u0435\u043C\n                    print(\"EPB CRITICAL ERROR: parent_flowgraph_ref\
+      \ is None before correlation. Aborting calibration cycle.\")\n             \
+      \       self.calibration_active = False \n                    if output_items\
+      \ and output_items[0] is not None: output_items[0][:] = input_items[0]\n   \
+      \                 return len(input_items[0])\n\n                print(f\"EPB:\
+      \ Buffers filled. Performing correlation...\")\n                # ... \u043E\
+      \u0441\u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043A\u043E\u0434 \u043A\u043E\
+      \u0440\u0440\u0435\u043B\u044F\u0446\u0438\u0438 ...\n                sig0,\
+      \ sig1 = self.buf0[-self.buffer_size:], self.buf1[-self.buffer_size:]\n    \
+      \            proc_sig0, proc_sig1 = sig0 - np.mean(sig0), sig1 - np.mean(sig1)\n\
+      \                corr = np.correlate(proc_sig0, proc_sig1, mode='full')\n  \
+      \              lag_at_max = np.argmax(corr) - (self.buffer_size - 1)\n\n   \
+      \             print(f\"EPB: Correlation complete. Lag = {lag_at_max}\")\n  \
+      \              self.message_port_pub(pmt.intern('calculated_lag'), pmt.to_pmt(float(lag_at_max)))\n\
+      \n                current_delay_val = self._get_compensation_delay_from_parent()\n\
+      \                new_delay = current_delay_val + lag_at_max\n              \
+      \  \n                self._set_compensation_delay_on_parent(new_delay)\n   \
+      \             \n                self.correlation_done_this_cycle = True\n  \
+      \              self.calibration_active = False\n                print(\"EPB:\
+      \ Calibration cycle finished.\")\n                self.buf0, self.buf1 = np.array([],\
+      \ dtype=np.float32), np.array([], dtype=np.float32)\n\n        if output_items\
+      \ and output_items[0] is not None:\n            output_len = len(output_items[0])\n\
+      \            input_len = len(input_items[0])\n            copy_len = min(output_len,\
+      \ input_len)\n            output_items[0][:copy_len] = input_items[0][:copy_len]\n\
+      \            if output_len > copy_len:\n                output_items[0][copy_len:]\
+      \ = 0.0\n        \n        return len(input_items[0])"
     affinity: ''
     alias: ''
-    buffer_size: '1024'
+    buffer_size: '4096'
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
-    _io_cache: ('Delay Correaltion EPB', 'blk', [('buffer_size', '1024')], [('0',
-      'float', 1), ('1', 'float', 1)], [('0', 'float', 1), ('delay_lag', 'message',
-      1)], '\n    Embedded Python Block to detect delay between two signals using
-      cross-correlation\n    and publish the result as a PMT message.\n    ', ['buffer_size'])
+    _io_cache: ('Delay Auto-Corrector EPB', 'blk', [('buffer_size', '1024')], [('0',
+      'float', 1), ('1', 'float', 1)], [('0', 'float', 1), ('calculated_lag', 'message',
+      1)], '', ['buffer_size'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 344.0]
+    coordinate: [536, 296.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0
@@ -314,7 +425,7 @@ blocks:
     axislabels: 'True'
     color1: red
     color10: dark blue
-    color2: red
+    color2: green
     color3: green
     color4: black
     color5: cyan
@@ -348,7 +459,7 @@ blocks:
     marker7: '-1'
     marker8: '-1'
     marker9: '-1'
-    name: '""'
+    name: Calibrated signal
     nconnections: '1'
     size: '200'
     srate: samp_rate
@@ -389,7 +500,123 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [656, 168.0]
+    coordinate: [960, 128.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_time_sink_x_0_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'True'
+    axislabels: 'True'
+    color1: red
+    color10: dark blue
+    color2: green
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: Calibrated signal
+    nconnections: '2'
+    size: '200'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1'
+    ymin: '-1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [744, 184.0]
+    rotation: 0
+    state: enabled
+- name: snippet_0
+  id: snippet
+  parameters:
+    alias: ''
+    code: "if hasattr(self, 'epy_block_0') and hasattr(self.epy_block_0, 'set_parent_flowgraph_reference'):\n\
+      \    print(\"PYTHON SNIPPET: Attempting to set parent for epy_block_0\")\n \
+      \   self.epy_block_0.set_parent_flowgraph_reference(self)\nelse:\n    print(\"\
+      PYTHON SNIPPET ERROR: epy_block_0 or set_parent_flowgraph_reference not found.\"\
+      )"
+    comment: ''
+    priority: '0'
+    section: main_after_init
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [376, 440.0]
     rotation: 0
     state: enabled
 
@@ -397,12 +624,14 @@ connections:
 - [analog_random_source_x_0, '0', blocks_delay_0, '0']
 - [analog_random_source_x_0, '0', blocks_delay_1, '0']
 - [blocks_char_to_float_0, '0', epy_block_0, '0']
+- [blocks_char_to_float_0, '0', qtgui_time_sink_x_0_0, '0']
 - [blocks_char_to_float_1, '0', epy_block_0, '1']
+- [blocks_char_to_float_1, '0', qtgui_time_sink_x_0_0, '1']
 - [blocks_delay_0, '0', blocks_char_to_float_0, '0']
 - [blocks_delay_1, '0', blocks_char_to_float_1, '0']
 - [blocks_throttle2_0, '0', qtgui_time_sink_x_0, '0']
 - [epy_block_0, '0', blocks_throttle2_0, '0']
-- [epy_block_0, delay_lag, blocks_message_debug_0, print]
+- [epy_block_0, calculated_lag, blocks_message_debug_0, print]
 
 metadata:
   file_format: 1
