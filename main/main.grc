@@ -522,7 +522,7 @@ blocks:
     axislabels: 'True'
     color1: red
     color10: dark blue
-    color2: green
+    color2: blue
     color3: green
     color4: black
     color5: cyan
@@ -556,14 +556,14 @@ blocks:
     marker7: '-1'
     marker8: '-1'
     marker9: '-1'
-    name: Calibrated signal
+    name: Source code
     nconnections: '2'
     size: '200'
     srate: samp_rate
     stemplot: 'False'
-    style1: '1'
+    style1: '2'
     style10: '1'
-    style2: '1'
+    style2: '2'
     style3: '1'
     style4: '1'
     style5: '1'

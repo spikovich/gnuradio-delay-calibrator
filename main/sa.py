@@ -75,7 +75,7 @@ class sa(gr.top_block, Qt.QWidget):
         self.start_calibration_button = start_calibration_button = False
         self.samp_rate = samp_rate = 32000
         self.reset_calibration_button = reset_calibration_button = False
-        self.compensation_delay = compensation_delay = 2
+        self.compensation_delay = compensation_delay = 0
 
         ##################################################
         # Blocks
@@ -96,7 +96,7 @@ class sa(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0_0 = qtgui.time_sink_f(
             200, #size
             samp_rate, #samp_rate
-            'Calibrated signal', #name
+            'Source code', #name
             2, #number of inputs
             None # parent
         )
@@ -118,11 +118,11 @@ class sa(gr.top_block, Qt.QWidget):
             'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
         widths = [1, 1, 1, 1, 1,
             1, 1, 1, 1, 1]
-        colors = ['red', 'green', 'green', 'black', 'cyan',
+        colors = ['red', 'blue', 'green', 'black', 'cyan',
             'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
         alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
             1.0, 1.0, 1.0, 1.0, 1.0]
-        styles = [1, 1, 1, 1, 1,
+        styles = [2, 2, 1, 1, 1,
             1, 1, 1, 1, 1]
         markers = [-1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1]
@@ -193,7 +193,7 @@ class sa(gr.top_block, Qt.QWidget):
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_float*1, samp_rate, True, 0 if "time" == "auto" else max( int(float(0.1) * samp_rate) if "time" == "time" else int(0.1), 1) )
         self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
         self.blocks_delay_1 = blocks.delay(gr.sizeof_char*1, compensation_delay)
-        self.blocks_delay_0 = blocks.delay(gr.sizeof_char*1, 45)
+        self.blocks_delay_0 = blocks.delay(gr.sizeof_char*1, 5)
         self.blocks_char_to_float_1 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0 = blocks.char_to_float(1, 1)
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 256, 8129))), True)

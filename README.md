@@ -58,11 +58,16 @@ gnuradio-companion main/main.grc
 2. Execute the flowgraph to start the calibration process
 3. The delay calibrator block will automatically adjust the delay parameters to achieve synchronization
 
+4. Alternatively, you can run the Python script directly:
+```bash
+python3 main/sa.py
+```
+
 You can also check the examples directory for sample implementations and test cases.
 
 ## Requirements
 
-- GNU Radio 3.8+
+- GNU Radio 3.10+
 - Python 3.7+
 - NumPy
 
@@ -81,4 +86,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Last Updated
 
-April 7, 2025
+May 12, 2025
