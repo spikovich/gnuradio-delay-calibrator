@@ -190,6 +190,8 @@ class sa(gr.top_block, Qt.QWidget):
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
         self.epy_block_0 = epy_block_0.blk(buffer_size=4096)
+        self.blocks_throttle2_0_1 = blocks.throttle( gr.sizeof_float*1, samp_rate, True, 0 if "time" == "auto" else max( int(float(0.1) * samp_rate) if "time" == "time" else int(0.1), 1) )
+        self.blocks_throttle2_0_0 = blocks.throttle( gr.sizeof_float*1, samp_rate, True, 0 if "time" == "auto" else max( int(float(0.1) * samp_rate) if "time" == "time" else int(0.1), 1) )
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_float*1, samp_rate, True, 0 if "time" == "auto" else max( int(float(0.1) * samp_rate) if "time" == "time" else int(0.1), 1) )
         self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
         self.blocks_delay_1 = blocks.delay(gr.sizeof_char*1, compensation_delay)
@@ -205,13 +207,15 @@ class sa(gr.top_block, Qt.QWidget):
         self.msg_connect((self.epy_block_0, 'calculated_lag'), (self.blocks_message_debug_0, 'print'))
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_delay_0, 0))
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_delay_1, 0))
+        self.connect((self.blocks_char_to_float_0, 0), (self.blocks_throttle2_0_0, 0))
         self.connect((self.blocks_char_to_float_0, 0), (self.epy_block_0, 0))
-        self.connect((self.blocks_char_to_float_0, 0), (self.qtgui_time_sink_x_0_0, 0))
+        self.connect((self.blocks_char_to_float_1, 0), (self.blocks_throttle2_0_1, 0))
         self.connect((self.blocks_char_to_float_1, 0), (self.epy_block_0, 1))
-        self.connect((self.blocks_char_to_float_1, 0), (self.qtgui_time_sink_x_0_0, 1))
         self.connect((self.blocks_delay_0, 0), (self.blocks_char_to_float_0, 0))
         self.connect((self.blocks_delay_1, 0), (self.blocks_char_to_float_1, 0))
         self.connect((self.blocks_throttle2_0, 0), (self.qtgui_time_sink_x_0, 0))
+        self.connect((self.blocks_throttle2_0_0, 0), (self.qtgui_time_sink_x_0_0, 0))
+        self.connect((self.blocks_throttle2_0_1, 0), (self.qtgui_time_sink_x_0_0, 1))
         self.connect((self.epy_block_0, 0), (self.blocks_throttle2_0, 0))
 
 
@@ -237,6 +241,8 @@ class sa(gr.top_block, Qt.QWidget):
         self.blocks_throttle2_0.set_sample_rate(self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate)
+        self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
+        self.blocks_throttle2_0_1.set_sample_rate(self.samp_rate)
 
     def get_reset_calibration_button(self):
         return self.reset_calibration_button

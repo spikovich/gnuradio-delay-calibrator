@@ -88,7 +88,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 40.0]
+    coordinate: [312, 8.0]
     rotation: 0
     state: enabled
 - name: analog_random_source_x_0
@@ -197,8 +197,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [744, 416.0]
-    rotation: 0
+    coordinate: [696.0, 496]
+    rotation: 270
     state: enabled
 - name: blocks_throttle2_0
   id: blocks_throttle2
@@ -218,7 +218,49 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 296.0]
+    coordinate: [888.0, 360]
+    rotation: 270
+    state: enabled
+- name: blocks_throttle2_0_0
+  id: blocks_throttle2
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    ignoretag: 'True'
+    limit: time
+    maximum: '0.1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: samp_rate
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [536, 88.0]
+    rotation: 0
+    state: enabled
+- name: blocks_throttle2_0_1
+  id: blocks_throttle2
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    ignoretag: 'True'
+    limit: time
+    maximum: '0.1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: samp_rate
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [536, 192.0]
     rotation: 0
     state: enabled
 - name: epy_block_0
@@ -499,8 +541,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [960, 128.0]
-    rotation: 0
+    coordinate: [880.0, 536]
+    rotation: 270
     state: enabled
 - name: qtgui_time_sink_x_0_0
   id: qtgui_time_sink_x
@@ -596,7 +638,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [744, 184.0]
+    coordinate: [752, 136.0]
     rotation: 0
     state: enabled
 - name: snippet_0
@@ -622,13 +664,15 @@ blocks:
 connections:
 - [analog_random_source_x_0, '0', blocks_delay_0, '0']
 - [analog_random_source_x_0, '0', blocks_delay_1, '0']
+- [blocks_char_to_float_0, '0', blocks_throttle2_0_0, '0']
 - [blocks_char_to_float_0, '0', epy_block_0, '0']
-- [blocks_char_to_float_0, '0', qtgui_time_sink_x_0_0, '0']
+- [blocks_char_to_float_1, '0', blocks_throttle2_0_1, '0']
 - [blocks_char_to_float_1, '0', epy_block_0, '1']
-- [blocks_char_to_float_1, '0', qtgui_time_sink_x_0_0, '1']
 - [blocks_delay_0, '0', blocks_char_to_float_0, '0']
 - [blocks_delay_1, '0', blocks_char_to_float_1, '0']
 - [blocks_throttle2_0, '0', qtgui_time_sink_x_0, '0']
+- [blocks_throttle2_0_0, '0', qtgui_time_sink_x_0_0, '0']
+- [blocks_throttle2_0_1, '0', qtgui_time_sink_x_0_0, '1']
 - [epy_block_0, '0', blocks_throttle2_0, '0']
 - [epy_block_0, calculated_lag, blocks_message_debug_0, print]
 
