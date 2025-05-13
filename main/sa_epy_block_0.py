@@ -1,20 +1,20 @@
 import numpy as np
 from gnuradio import gr
-import pmt # Оставьте, если все еще хотите PMT для lag
+import pmt 
 
 class blk(gr.sync_block):
     def __init__(self, buffer_size=1024):
         gr.sync_block.__init__(
             self,
-            name='Delay Auto-Corrector & Difference EPB', # Новое имя
+            name='Delay Auto-Corrector & Difference EPB',
             in_sig=[np.float32, np.float32],      # S_ref, S_comp
             out_sig=[np.float32]                  # Difference signal (S_ref - S_comp)
         )
         self.buffer_size = int(buffer_size)
-        # Если lag все еще нужен как сообщение:
+        
         self.message_port_register_out(pmt.intern('calculated_lag')) 
 
-        # ... (остальные атрибуты как раньше: buf0, buf1, calibration_active, etc.) ...
+        
         self.buf0 = np.array([], dtype=np.float32)
         self.buf1 = np.array([], dtype=np.float32)
         self.calibration_active = False
@@ -31,7 +31,7 @@ class blk(gr.sync_block):
         if self.parent_flowgraph_ref is None: 
             print("EPB INFO: __init__ - parent_flowgraph_ref is initially None. Expecting manual set via method.")
 
-    # ... (методы set_parent_flowgraph_reference, _check_buttons, _set_compensation_delay_on_parent, _get_compensation_delay_from_parent, start_calibration, reset_calibration остаются ТЕМИ ЖЕ) ...
+   
     # НОВЫЙ МЕТОД
     def set_parent_flowgraph_reference(self, parent_ref):
         #print(f"EPB DEBUG: set_parent_flowgraph_reference called with parent_ref type: {type(parent_ref)}")
@@ -151,7 +151,7 @@ class blk(gr.sync_block):
                  output_items[0][:] = 0.0 
             return 0
         
-        # Накопление данных для корреляции (если нужно)
+        
         self.buf0 = np.concatenate((self.buf0, input_items[0]))
         self.buf1 = np.concatenate((self.buf1, input_items[1]))
         max_buf_len = self.buffer_size * 2 
@@ -164,7 +164,7 @@ class blk(gr.sync_block):
                 if self.parent_flowgraph_ref is None: 
                     #print("EPB CRITICAL ERROR: parent_flowgraph_ref is None before correlation. Aborting calibration cycle.")
                     self.calibration_active = False 
-                    # Вычисляем разницу и выводим ее, даже если калибровка не удалась
+                   
                     diff_signal = input_items[0] - input_items[1]
                     output_items[0][:len(diff_signal)] = diff_signal
                     if len(output_items[0]) > len(diff_signal):
@@ -191,19 +191,19 @@ class blk(gr.sync_block):
                 self.buf0, self.buf1 = np.array([], dtype=np.float32), np.array([], dtype=np.float32)
 
         # --- ИЗМЕНЕНИЕ: Вычисляем и выводим разницу КАЖДЫЙ РАЗ ---
-        # Убедимся, что длины совпадают для корректного вычитания текущих блоков
+        
         len_in0 = len(input_items[0])
         len_in1 = len(input_items[1])
         len_out = len(output_items[0])
+
         
-        # Работаем с минимальной из длин, чтобы избежать ошибок индексации
         process_len = min(len_in0, len_in1, len_out)
         
         difference = input_items[0][:process_len] - input_items[1][:process_len]
         output_items[0][:process_len] = difference
         
-        # Если выходной буфер длиннее, заполняем остаток нулями
+        
         if len_out > process_len:
             output_items[0][process_len:] = 0.0
         
-        return len(output_items[0]) # Возвращаем длину выходного буфера, который мы заполнили
+        return len(output_items[0])
