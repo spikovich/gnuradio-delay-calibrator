@@ -96,7 +96,7 @@ class sa(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0_0 = qtgui.time_sink_f(
             200, #size
             samp_rate, #samp_rate
-            'Source code', #name
+            'Source signals', #name
             2, #number of inputs
             None # parent
         )
