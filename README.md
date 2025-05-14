@@ -13,6 +13,7 @@ The GNU Radio Delay Calibrator is a tool designed to automatically determine and
 - Custom signal processing logic implemented within an Embedded Python Block (EPB).
 - GUI controls to initiate calibration and reset the compensation.
 - Real-time observation of signal alignment.
+- Difference signal output for precise alignment verification.
 - Designed to work seamlessly when launched from GNU Radio Companion.
 
 ## Project Structure
@@ -21,13 +22,16 @@ gnuradio-delay-calibrator/
 ├── blocks/                 # Custom GNU Radio blocks
 │   └── epy_block_0_9fjxvh7m.py
 ├── docs/                   # Documentation
-│   └── IPv6_Special_Assignments.pdf
+│   ├── Automatic Stream Delay Calibration in GNU Radio by Spika.pdf
+│   └── IPv6SpecialAssignments25 (pdf.io).pdf
 ├── examples/               # Example usage
 │   ├── exampl.grc          # GNU Radio Companion example
 │   ├── sa_epy_block_0.py   # Example embedded Python block
 │   └── sa.py               # Example implementation
 ├── main/                   # Main application
-│   └── main.grc            # Main GNU Radio Companion flowgraph
+│   ├── main.grc            # Main GNU Radio Companion flowgraph
+│   ├── sa_epy_block_0.py   # Main embedded Python block implementation
+│   └── sa.py               # Generated Python script
 ├── requirements.txt        # Project dependencies
 ├── LICENSE                 # MIT License
 ├── CODE_OF_CONDUCT.md      # Community guidelines
@@ -37,11 +41,11 @@ gnuradio-delay-calibrator/
 ```
 ## Prerequisites
 
-1.  **GNU Radio:** Version 3.10.x installed.
+1.  **GNU Radio:** Version 3.9.0 or newer installed.
     *   Ensure `gnuradio-companion` is operational and your Python 3 environment is correctly configured for GNU Radio.
     *   Standard components like `gr-blocks`, `gr-qtgui`, and `gr-analog` are required.
 2.  **Python Dependencies:**
-    *   NumPy (typically installed with GNU Radio)
+    *   NumPy 1.25.0 or newer (may be installed with GNU Radio)
     *   PyQt5 (typically installed with GNU Radio for `gr-qtgui`)
     *   These are listed in `requirements.txt` for completeness.
 
@@ -73,9 +77,7 @@ The primary method to run and test this project is via GNU Radio Companion (GRC)
     gnuradio-companion main.grc
     ```
 
-2.  **Verify Key Components in GRC (Important for Evaluation):**
-
-    *   **Embedded Python Block (EPB) - "Delay Auto-Corrector EPB":**
+2.  **Verify Key Components in GRC (Important for Evaluation):**    *   **Embedded Python Block (EPB) - "Delay Auto-Corrector & Difference EPB":**
         *   Double-click this block in the GRC canvas.
         *   Go to the 'Source Code' tab (or 'Properties' depending on GRC version).
         *   The Python code for the block is embedded here. A reference copy of this code is also in `main/sa_epy_block_0.py`. **Ensure the code within GRC matches this reference file.**
@@ -105,20 +107,18 @@ The primary method to run and test this project is via GNU Radio Companion (GRC)
     *   Then, click the "Execute the flowgraph" button (play icon ▶).
 
 4.  **Interacting with the Calibrator GUI:**
-    *   A GUI window will appear with "Start Calibration" and "Reset Calibration" buttons, and a Time Sink display.
-    *   **Time Sink (with 2 inputs):** This graph shows:
+    *   A GUI window will appear with "Start Calibration" and "Reset Calibration" buttons, and a Time Sink display.    *   **Time Sink (with 2 inputs):** This graph shows:
         *   Signal 1 (e.g., red): The reference signal with the fixed system delay.
         *   Signal 2 (e.g., green): The signal whose delay is being compensated.
+    *   **Difference Output:** The block also outputs the difference between the reference and compensated signals, which can be visualized in a separate sink to verify alignment quality.
     *   **Initial State:** Upon startup, the `compensation_delay` for Signal 2 is reset to `0` by the EPB. You should observe that Signal 1 and Signal 2 are out of sync.
     *   **"Start Calibration" Button:**
         *   Click this button to initiate one automatic delay calibration cycle.
-        *   **Console Output (in GRC's bottom panel):** Look for messages like:
-            ```
+        *   **Console Output (in GRC's bottom panel):** Look for messages like:            ```
             EPB: Start Calibration Action Triggered
             ...
-            EPB: Correlation complete. Lag = <X>
+            Auto-Compensation: Calculated lag = <X>
             Auto-Compensation: New compensation delay = <Y> 
-            EPB: Calibration cycle finished.
             ```
             The `Message Debug` block (if enabled and connected) will also show the calculated `lag (X)`.
         *   **Time Sink Display:** After a successful calibration, Signal 1 and Signal 2 should **perfectly overlap**, appearing as a single trace. The value of Y should equal the system delay.
@@ -134,13 +134,15 @@ When calibration is triggered, the EPB will print:
 - The new `compensation_delay` value that has been set.
 
 Example:
+```
 Auto-Compensation: Calculated lag = 5
 Auto-Compensation: New compensation delay = 5
+```
 ## Requirements Summary
 
-- GNU Radio 3.10.x
+- GNU Radio 3.9.0 or newer
 - Python 3.x (as required by GNU Radio)
-- NumPy
+- NumPy 1.25.0 or newer
 
 ## Contributing
 
@@ -156,4 +158,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Last Updated
 
-May 12, 2025
+May 14, 2025
